@@ -17,6 +17,7 @@ df[,1:6]
 ```
 
 ```{r}
+set.seed(123)
 df_reduce <- tsne(df %>% select(X2:X300) %>% data.matrix(), perplexity = 10,
                   initial_dims = 30)
 
@@ -26,7 +27,11 @@ df_reduce
 
 ```{r}
 plot <- ggplot(df_reduce, aes(x=X1, y=X2, label=char)) +
-          geom_text()
+          geom_text(family="Source Code Pro Semibold") +
+          theme_void(base_family = "Source Sans Pro") +
+          labs(title = "Projection of 300D Character Vectors into 2D via t-SNE",
+               subtitle = "Characters closer to each other are more similar in usage",
+               caption = "Max Woolf — minimaxir.com")
 
 plot
 ```
