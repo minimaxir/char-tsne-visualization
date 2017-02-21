@@ -1,0 +1,18 @@
+---
+title: "R Notebook"
+output: html_notebook
+---
+
+
+```{r}
+library(ggplot2)
+library(readr)
+library(dplyr)
+```
+
+```{r}
+df <- read_delim("glove.840B.300d-char.txt", col_names = F, delim=" ", quote = "—")
+df[,1:6]
+```
+
+df$X1[1]
