@@ -8,6 +8,7 @@ output: html_notebook
 library(ggplot2)
 library(readr)
 library(dplyr)
+library(tsne)
 ```
 
 ```{r}
@@ -15,4 +16,18 @@ df <- read_delim("glove.840B.300d-char.txt", col_names = F, delim=" ", quote = "
 df[,1:6]
 ```
 
-df$X1[1]
+```{r}
+df_reduce <- tsne(df %>% select(X2:X300) %>% data.matrix(), perplexity = 10,
+                  initial_dims = 30)
+
+df_reduce <- data.frame(char = df$X1, df_reduce) %>% tbl_df() %>% mutate(char = as.character(char))
+df_reduce
+```
+
+```{r}
+plot <- ggplot(df_reduce, aes(x=X1, y=X2, label=char)) +
+          geom_text()
+
+plot
+```
+
