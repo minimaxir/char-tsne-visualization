@@ -29,9 +29,13 @@ type
 
 
 ```{r}
+perplexity = 10
+initial_dims = 30
+max_iter = 5000
+
 set.seed(123)
-df_reduce <- tsne(df %>% select(X2:X300) %>% data.matrix(), perplexity = 10,
-                  initial_dims = 30)
+df_reduce <- tsne(df %>% select(X2:X300) %>% data.matrix(), perplexity = perplexity,
+                  initial_dims = initial_dims, max_iter = max_iter)
 
 df_reduce <- data.frame(char = df$X1, type = type, df_reduce) %>%
                 tbl_df() %>%
@@ -52,5 +56,32 @@ plot <- ggplot(df_reduce, aes(x=X1, y=X2, label=char, color = type)) +
 
 plot
 ggsave("char-tsne.png", plot, dpi=300, width=5, height=4)
+```
+
+```{r}
+perplexity = 5
+initial_dims = 60
+max_iter = 5000
+
+set.seed(123)
+df_reduce <- tsne(df %>% select(X2:X300) %>% data.matrix(), perplexity = perplexity,
+                  initial_dims = initial_dims, max_iter = max_iter)
+
+df_reduce <- data.frame(char = df$X1, type = type, df_reduce) %>%
+                tbl_df() %>%
+                mutate(char = as.character(char))
+
+plot <- ggplot(df_reduce, aes(x=X1, y=X2, label=char, color = type)) +
+          geom_text(family="Source Code Pro Semibold") +
+          theme_void(base_family = "Source Sans Pro", base_size=8) +
+          scale_color_brewer(palette="Set1") + 
+          labs(title = "Projection of 300D GloVe Character Vectors into 2D Space (60D, perplexity = 5)",
+               subtitle = "Characters closer to each other are more similar in usage context.",
+               caption = "Max Woolf — minimaxir.com",
+               color = '') +
+          theme(plot.margin = unit(c(0.2,0.2,0.2,0.2),"cm"))
+
+plot
+ggsave("char-tsne-2.png", plot, dpi=300, width=5, height=4)
 ```
 
