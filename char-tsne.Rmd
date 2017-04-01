@@ -5,9 +5,7 @@ output: html_notebook
 
 
 ```{r}
-library(ggplot2)
-library(readr)
-library(dplyr)
+source("Rstart.R")
 library(tsne)
 ```
 
@@ -54,10 +52,10 @@ plot <- ggplot(df_reduce, aes(x=X1, y=X2, label=char, color = type)) +
                color = '') +
           theme(plot.margin = unit(c(0.2,0.2,0.2,0.2),"cm"))
 
-plot
 ggsave("char-tsne.png", plot, dpi=300, width=5, height=4)
 ```
 
+![](char-tsne.png)
 ```{r}
 perplexity = 5
 initial_dims = 60
@@ -81,7 +79,101 @@ plot <- ggplot(df_reduce, aes(x=X1, y=X2, label=char, color = type)) +
                color = '') +
           theme(plot.margin = unit(c(0.2,0.2,0.2,0.2),"cm"))
 
-plot
 ggsave("char-tsne-2.png", plot, dpi=300, width=5, height=4)
 ```
 
+![](char-tsne-2.png)
+
+## Visualize Embedded Magic Characters
+
+```{r}
+df_embed <- read_delim("char-embeddings.txt", col_names = F, delim=" ", quote = "—")
+df_embed <- na.omit(df_embed)   # removes space and newline since will not parse
+df_embed[,1:6]
+```
+
+```{r}
+type_embed <- ifelse(df_embed$X1 %in% letters, "lowercase",
+                ifelse(df_embed$X1 %in% LETTERS, "uppercase",
+                 ifelse(df_embed$X1 %in% c(0:9), "numeric", "punctuation")))
+
+type_embed <- factor(type_embed, levels=c("lowercase", "uppercase", "numeric", "punctuation"))
+```
+
+```{r}
+perplexity = 10
+initial_dims = 30
+max_iter = 5000
+
+set.seed(123)
+df_reduce <- tsne(df_embed %>% select(X2:X300) %>% data.matrix(), perplexity = perplexity,
+                  initial_dims = initial_dims, max_iter = max_iter)
+
+df_reduce <- data.frame(char = df_embed$X1, type = type_embed, df_reduce) %>%
+                tbl_df() %>%
+                mutate(char = as.character(char))
+
+plot <- ggplot(df_reduce, aes(x=X1, y=X2, label=char, color = type)) +
+          geom_text(family="Source Code Pro Semibold") +
+          theme_void(base_family = "Source Sans Pro", base_size=8) +
+          scale_color_brewer(palette="Set1") + 
+          labs(title = "Projection of 300D Magic Card Character Vectors into 2D Space (30D, perplexity = 10)",
+               subtitle = "Characters closer to each other are more similar in usage context.",
+               caption = "Max Woolf — minimaxir.com",
+               color = '') +
+          theme(plot.margin = unit(c(0.2,0.2,0.2,0.2),"cm"))
+
+ggsave("char-tsne-embed.png", plot, dpi=300, width=5, height=4)
+```
+
+![](char-tsne-embed.png)
+
+# Training Perfomance
+
+```{r}
+batches_per_epoch = 7850
+
+df_train <- read_csv("log.csv") %>% filter(iteration <= 20) %>%
+              mutate(cumbatch = (iteration-1) * batches_per_epoch + batch)
+df_train %>% head(200)
+```
+
+```{r}
+#df_train_reshape <- df_train %>% gather(key = loss_type, value = loss, batch_loss, epoch_loss) %>%
+#                      mutate(loss_type = factor(loss_type))
+#df_train_reshape %>% head(100)
+```
+
+
+```{r}
+plot <- ggplot(df_train, aes(x=cumbatch, y=batch_loss, color=factor(iteration))) +
+          geom_line(size=0.1) +
+          scale_y_sqrt(breaks=c(0, 0.25, 0.5, 1, 2, 4)) +
+          scale_x_continuous(breaks = seq(0, max(df_train$cumbatch)+batches_per_epoch, by=batches_per_epoch), labels = c(0:20)) +
+          fte_theme() +
+          theme(panel.grid.major = element_line(size=0.1)) +
+    labs(title = "Batch Loss Over Time While Training Magic Card Generator",
+          x = "# Epoch",
+          y = "Batch Loss (128 Samples per Batch)")
+
+max_save(plot, "batch-losses", "Keras Logging")
+```
+
+![](batch-losses.png)
+
+
+```{r}
+plot <- ggplot(df_train, aes(x=cumbatch, y=epoch_loss, color=factor(iteration))) +
+          geom_line(size=0.5) +
+          scale_y_sqrt(breaks=c(0, 0.25, 0.5, 1, 2, 4)) +
+          scale_x_continuous(breaks = seq(0, max(df_train$cumbatch)+batches_per_epoch, by=batches_per_epoch), labels = c(0:20)) +
+          fte_theme() +
+          theme(panel.grid.major = element_line(size=0.1)) +
+    labs(title = "Epoch Loss Over Time While Training Magic Card Generator",
+          x = "# Epoch",
+          y = "Epoch Loss (Average Batch Loss During Epoch)")
+
+max_save(plot, "epoch-losses", "Keras Logging")
+```
+
+![](epoch-losses.png)
