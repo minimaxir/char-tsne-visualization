@@ -21,6 +21,8 @@ source("Rstart.R")
 library(tsne)
 ```
 
+# Visualize GloVe Vectors
+
 ```{r}
 df <- read_delim("glove.840B.300d-char.txt", col_names = F, delim=" ", quote = "—")
 df[,1:6]
@@ -39,12 +41,12 @@ type
 
 
 ```{r}
-perplexity = 10
-initial_dims = 30
+perplexity = 5
+initial_dims = 16
 max_iter = 5000
 
 set.seed(123)
-df_reduce <- tsne(df %>% select(X2:X300) %>% data.matrix(), perplexity = perplexity,
+df_reduce <- tsne(df %>% select(X2:X301) %>% data.matrix(), perplexity = perplexity,
                   initial_dims = initial_dims, max_iter = max_iter)
 
 df_reduce <- data.frame(char = df$X1, type = type, df_reduce) %>%
@@ -58,23 +60,23 @@ plot <- ggplot(df_reduce, aes(x=X1, y=X2, label=char, color = type)) +
           geom_text(family="Source Code Pro Semibold") +
           theme_void(base_family = "Source Sans Pro", base_size=8) +
           scale_color_brewer(palette="Set1") + 
-          labs(title = "Projection of 300D GloVe Character Vectors into 2D Space (30D, perplexity = 10)",
+          labs(title = "Projection of 300D GloVe Character Vectors into 2D Space (16D, perplexity = 5)",
                subtitle = "Characters closer to each other are more similar in usage context.",
-               caption = "Max Woolf — minimaxir.com",
                color = '') +
-          theme(plot.margin = unit(c(0.2,0.2,0.2,0.2),"cm"))
+          theme(plot.margin = unit(c(0.2,0.2,0.2,0.2),"cm"),
+                plot.subtitle = element_text(family="Open Sans Condensed Bold", size=8, color="#666666"))
 
-ggsave("char-tsne.png", plot, dpi=300, width=5, height=4)
+max_save(plot, "char-tsne", w=5, h=4, "Stanford NLP")
 ```
 
 ![](char-tsne.png)
 ```{r}
 perplexity = 5
-initial_dims = 60
+initial_dims = 70
 max_iter = 5000
 
 set.seed(123)
-df_reduce <- tsne(df %>% select(X2:X300) %>% data.matrix(), perplexity = perplexity,
+df_reduce <- tsne(df %>% select(X2:X301) %>% data.matrix(), perplexity = perplexity,
                   initial_dims = initial_dims, max_iter = max_iter)
 
 df_reduce <- data.frame(char = df$X1, type = type, df_reduce) %>%
@@ -85,18 +87,18 @@ plot <- ggplot(df_reduce, aes(x=X1, y=X2, label=char, color = type)) +
           geom_text(family="Source Code Pro Semibold") +
           theme_void(base_family = "Source Sans Pro", base_size=8) +
           scale_color_brewer(palette="Set1") + 
-          labs(title = "Projection of 300D GloVe Character Vectors into 2D Space (60D, perplexity = 5)",
+          labs(title = "Projection of 300D GloVe Character Vectors into 2D Space (70D, perplexity = 5)",
                subtitle = "Characters closer to each other are more similar in usage context.",
-               caption = "Max Woolf — minimaxir.com",
                color = '') +
-          theme(plot.margin = unit(c(0.2,0.2,0.2,0.2),"cm"))
+          theme(plot.margin = unit(c(0.2,0.2,0.2,0.2),"cm"),
+                plot.subtitle = element_text(family="Open Sans Condensed Bold", size=8, color="#666666"))
 
-ggsave("char-tsne-2.png", plot, dpi=300, width=5, height=4)
+max_save(plot, "char-tsne-2", w=5, h=4, "Stanford NLP")
 ```
 
 ![](char-tsne-2.png)
 
-## Visualize Embedded Magic Characters
+# Visualize Embedded Magic Characters
 
 ```{r}
 df_embed <- read_delim("char-embeddings.txt", col_names = F, delim=" ", quote = "—")
@@ -118,7 +120,7 @@ initial_dims = 30
 max_iter = 5000
 
 set.seed(123)
-df_reduce <- tsne(df_embed %>% select(X2:X300) %>% data.matrix(), perplexity = perplexity,
+df_reduce <- tsne(df_embed %>% select(X2:X301) %>% data.matrix(), perplexity = perplexity,
                   initial_dims = initial_dims, max_iter = max_iter)
 
 df_reduce <- data.frame(char = df_embed$X1, type = type_embed, df_reduce) %>%
@@ -131,11 +133,11 @@ plot <- ggplot(df_reduce, aes(x=X1, y=X2, label=char, color = type)) +
           scale_color_brewer(palette="Set1") + 
           labs(title = "Projection of 300D Magic Card Character Vectors into 2D Space (30D, perplexity = 10)",
                subtitle = "Characters closer to each other are more similar in usage context.",
-               caption = "Max Woolf — minimaxir.com",
                color = '') +
-          theme(plot.margin = unit(c(0.2,0.2,0.2,0.2),"cm"))
+          theme(plot.margin = unit(c(0.2,0.2,0.2,0.2),"cm"),
+                plot.subtitle = element_text(family="Open Sans Condensed Bold", size=8, color="#666666"))
 
-ggsave("char-tsne-embed.png", plot, dpi=300, width=5, height=4)
+max_save(plot, "char-tsne-embed", w=5, h=4, "Keras Logging")
 ```
 
 ![](char-tsne-embed.png)
